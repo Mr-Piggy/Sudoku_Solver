@@ -1,9 +1,6 @@
 
 import tkinter as tk
 from tkinter import ttk
-from tkinter.messa#!/usr/bin/env python3
-import tkinter as tk
-from tkinter import ttk
 from tkinter.messagebox import showinfo
 
 class Solver():
