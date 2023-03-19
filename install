@@ -7,7 +7,7 @@ cd Sudoku_Solver/binary
 chmod +x sudokusolver
 cp -r * ..
 cd ..
-sudo rm -r binary code .git
+sudo rm -r binary code .git install
 cp SudokuSolver.desktop ~/Desktop/
 sudo cp SudokuSolver.desktop /usr/share/applications/
 sudo cp sudokusolver /usr/bin/
