@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Sudoku Solver
+Comment=Simple sudoku solver
+Exec=sudokusolver
+Icon=/home/mr-piggy/.sudokusolver/sudoku.jpg
+Terminal=false
+Type=Application
+Categories=Utility;
+StartupNotify=true
