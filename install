@@ -1,3 +1,4 @@
+if [ "$(id -u)" -eq 0 ]; then echo "Please run as ordinary user." >&2; exit 1; fi
 sudo apt update
 sudo apt install python3 git
 mkdir ~/.sudokusolver
