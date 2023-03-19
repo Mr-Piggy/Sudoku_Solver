@@ -1,365 +1,180 @@
+#!/usr/bin/env python3
 
 import tkinter as tk
 from tkinter import ttk
 from tkinter.messagebox import showinfo
 
-class Solver():
-    """
-    The Solver class contains the basic solving code
-    """
-    def __init__(self):
-        self.count = 0
-    def find_next_empty(self, puzzle):
-        """
-        This function finds the next empty space on the board
-        """
-        for row in range(9):
-            for column in range(9):
-                if puzzle[row][column] == -1:
-                    return row, column
-        return None, None
-    def find_next_full(self, puzzle):
-        """
-        This function finds the next space that is not empty
-        """
-        for row in range(9):
-            for column in range(9):
-                if puzzle[row][column] != -1:
-                    return row, column
-        return None, None
+count = 0
 
-    def is_valid(self, puzzle, guess, row, col):
-        """
-        This function checks if a guess can go in the specified place
-        """
-        row_vals = puzzle[row]
-        if guess in row_vals:
-            return False
-        col_vals = [puzzle[i][col] for i in range(9)]
-        if guess in col_vals:
-            return False
-        row_start = (row // 3) * 3
-        col_start = (col // 3) * 3
-        for r in range(row_start, row_start + 3):
-            for c in range(col_start, col_start + 3):
-                if puzzle[r][c] == guess:
-                    return False
-        return True
-        
-    def solve(self, puzzle):
-        """
-        This function solves the sudoku
-        """
-        row, col = self.find_next_empty(puzzle)
-        if row is None and col is None:
-            return True
-        for guess in range(1,10):
-            self.count += 1
-            if self.is_valid(puzzle, guess, row, col):
-                puzzle[row][col] = guess
-                
-                if self.solve(puzzle):
-                    return (True, puzzle, self.count)
-            puzzle[row][col] = -1
+def find_next_empty(puzzle):
+    for row in range(9):
+        for column in range(9):
+            if puzzle[row][column] == -1:
+                return row, column
+    return None, None
+def find_next_full(puzzle):
+    for row in range(9):
+        for column in range(9):
+            if not(puzzle[row][column] == -1):
+                return row, column
+    return None, None
+def is_valid(puzzle, guess, row, col):
+    row_vals = puzzle[row]
+    if guess in row_vals:
         return False
-
-class GUI():
-    """
-    The GUI class represents a GUI which solves sudokus
-    """
-    def __init__(self):
-        """
-        Build the window
-        """
-        self.solver = Solver()
-        self.window = tk.Tk()
-        self.title = tk.Label(text="WELCOME TO THE SUDOKU SOLVER")
-        self.title.grid(row=1, column=1)
-        self.board = [[],[],[],[],[],[],[],[],[]]
-        for row in range(9):
-            for item in range(9):
-                myentry = tk.Entry(width=1)
-                myentry.grid(row=row+3, column=item+3)
-                self.board[row].append(myentry)
-        self.pb = ttk.Progressbar(
-            self.window,
-            orient='horizontal',
-            mode='determinate',
-            length=280
-        )
-        self.pb.grid(row=5, column=1)
-        self.progress = tk.Label(text="0.0%")
-        self.progress.grid(row=6, column=1)
-        self.solve_btn = tk.Button(text="Solve!")
-        self.solve_btn.bind("<Button-1>", self.handle_solve_click)
-        self.solve_btn.grid(row=13,column=2)
-        self.clear_btn = tk.Button(text="Clear")
-        self.clear_btn.bind("<Button-1>", self.handle_clear_click)
-        self.clear_btn.grid(row=13, column=1)
-    
-    def handle_solve_click(self, event):
-        """
-        This function handles the press of the solve button
-        """
-        entryboard = [[],[],[],[],[],[],[],[],[]]
-        for row in range(9):
-            for item in range(9):
-                if self.board[row][item].get() != "":
-                    entryboard[row].append(int(self.board[row][item].get()))
-                else:
-                    entryboard[row].append(-1)
-        
-        row, col = self.solver.find_next_empty(entryboard)
-        if row == None:
-            showinfo(message="This sudoku is already solved.")
-            return False
-        row, col = self.solver.find_next_full(entryboard)
-        print(type(row))
-        while row != None:
-            now = entryboard[row][col]
-            entryboard[row][col] = -1
-            if self.solver.is_valid(entryboard, now, row, col):
-                pass
-            else:
-                showinfo(message="This is an impossible sudoku.")
-                # row = None
+    col_vals = [puzzle[i][col] for i in range(9)]
+    if guess in col_vals:
+        return False
+    row_start = (row // 3) * 3
+    col_start = (col // 3) * 3
+    for r in range(row_start, row_start + 3):
+        for c in range(col_start, col_start + 3):
+            if puzzle[r][c] == guess:
                 return False
-            #window.after(100, lambda:entryboard[row][col] = now)
-            previousrow, previouscol = row,col
-            row, col = self.solver.find_next_full(entryboard)
-            entryboard[previousrow][previouscol] = now
-        solved, self.solution, count = self.solver.solve(entryboard)
-        print(round(count/150))
-        self.pb.start(round(count/150))
-        print(self.solution)
-        print(count/1.5)
-        self.window.after(round(count/1.5), self.show_solution, entryboard)
-        self.window.after(10, self.update_progress_bar)
-    def show_solution(self, entryboard):
-        """
-        This function shows the solution
-        """
-        self.pb.stop()
-        self.pb['value'] = 100
-        count = 0
-        for row in range(9):
-            for item in range(9):
-                self.board[row][item].delete(0, tk.END)
-                self.board[row][item].insert(0, self.solution[row][item])
-    def handle_clear_click(self, event):
-        """
-        This function handles when the clear button is pressed
-        """
-        for row in range(9):
-            for item in range(9):
-                self.board[row][item].delete(0, tk.END)
-        self.pb['value'] = 0
-        self.progress['text'] = "0.0%"
-    def update_progress_bar(self):
-        """
-        This function updates the progress bar
-        """
-        if self.pb['value'] < 100:
-            self.progress['text'] =  f"{self.pb['value']}%"
-            self.window.after(10, self.update_progress_bar)
+    return True
+    
+def solve_sudoku(puzzle):
+    global count
+    row, col = find_next_empty(puzzle)
+    if row is None and col is None:
+        print("Solved")
+        return True
+    for guess in range(1,10):
+        count += 1
+        if is_valid(puzzle, guess, row, col):
+            puzzle[row][col] = guess
+            #print("Square ", row, col, " is valid with ", guess)
+            if solve_sudoku(puzzle):
+                return True
+        puzzle[row][col] = -1
+    return False
+def is_impossible(puzzle):
+    for i in range(9):
+        row = {}
+        column = {}
+        block = {}
+        row_cube = 3 * (i//3)
+        column_cube = 3 * (i%3)
+        for j in range(9):
+            if puzzle[i][j]!= -1 and puzzle[i][j] in row:
+                return False
+            row[puzzle[i][j]] = 1
+            if puzzle[j][i]!=-1 and puzzle[j][i] in column:
+                return False
+            column[puzzle[j][i]] = 1
+            rc= row_cube+j//3
+            cc = column_cube + j%3
+            if puzzle[rc][cc] in block and puzzle[rc][cc]!=-1:
+                return False
+            block[puzzle[rc][cc]]=1
+    return True
+def handle_solve_click(event):
+    #pylint: disable=unused-argument
+    global count
+    entryboard = [[],[],[],[],[],[],[],[],[]]
+    for row in range(9):
+        for item in range(9):
+            if board[row][item].get() != "":
+                entryboard[row].append(int(board[row][item].get())) 
+            else:
+                entryboard[row].append(-1)
+    #print(entryboard)
+    #extraboard = entryboard
+    if not(is_impossible(entryboard)):
+        showinfo(message="Impossible")
+        return False
+    solve_sudoku(entryboard)
+    print(count)
+    time = count/2
+    while time > 10000:
+        time -= 1000
+        print(time)
+    print(time)
+    pb.start(round(time/100))
+    print(entryboard)
+    window.after(round(time), show_solution, entryboard)
+    window.after(10, update_progress_bar)
+def show_solution(entryboard):
+    pb.stop()
+    pb['value'] = 100
+    count = 0
+    for row in range(9):
+        for item in range(9):
+            board[row][item].delete(0, tk.END)
+            board[row][item].insert(0, entryboard[row][item])
+    print("+" + "---+"*9)
+    for i, row in enumerate(entryboard):
+        print(("|" + " {}   {}   {} |"*3).format(*[x if x != -1 else " " for x in row]))
+        if i % 3 == 2:
+            print("+" + "---+"*9)
         else:
-            self.pb['value'] = 100
-            self.progress['text'] = "Complete"
-    def start(self):
-        self.window.mainloop()
+            print("+" + "   +"*9)
+def handle_clear_click(event):
+    for row in range(9):
+        for item in range(9):
+            board[row][item].delete(0, tk.END)
+    pb['value'] = 0
+    progress['text'] = "0.0%"
+#def handle_save_click(event):
+#    entryboard = [[],[],[],[],[],[],[],[],[]]
+#    stringtowrite = ""
+#    for row in range(9):
+#        for item in range(9):
+#            if board[row][item].get() != "":
+#                entryboard[row].append(int(board[row][item].get())) 
+#            else:
+#                entryboard[row].append(-1)
+#    stringtowrite += ("+" + "---+"*9)+"\n"
+#    for i, row in enumerate(entryboard):
+#        stringtowrite += ("|" + " {}   {}   {} |"*3).format(*[x if x != -1 else " " for x in row]) + "\n"
+#        if i % 3 == 2:
+#            stringtowrite += ("+" + "---+"*9) + "\n"
+#        else:
+#            stringtowrite += ("+" + "   +"*9) + "\n"
+#    with open("file.txt", "a") as file:
+#        file.write(stringtowrite)
+#        file.write("\n\n")
+def update_progress_bar():
+    if pb['value'] < 100:
+        progress['text'] =  f"{pb['value']}%"
+        window.after(10, update_progress_bar)
+    else:
+        pb['value'] = 100
+        progress['text'] = "Complete"
 
 if __name__ == "__main__":
-    solver = Solver()
-    print(solver.solve([[-1,7,2,-1,3,6,4,-1,-1],
-              [-1,9,-1,7,-1,-1,-1,3,5],
-              [-1,-1,-1,1,8,-1,-1,-1,2],
-              [2,-1,6,-1,-1,-1,-1,9,-1],
-              [3,-1,5,-1,9,-1,6,-1,8],
-              [-1,4,-1,-1,-1,-1,5,-1,1],
-              [7,-1,-1,-1,2,3,-1,-1,-1],
-              [1,5,-1,-1,-1,4,-1,8,-1],
-              [-1,-1,8,6,1,-1,9,7,-1]]))
-    interface = GUI()
-    interface.start()
-    
-gebox import showinfo
-
-class Solver():
-    """
-    The Solver class contains the basic solving code
-    """
-    def __init__(self):
-        self.count = 0
-    def find_next_empty(self, puzzle):
-        """
-        This function finds the next empty space on the board
-        """
-        for row in range(9):
-            for column in range(9):
-                if puzzle[row][column] == -1:
-                    return row, column
-        return None, None
-    def find_next_full(self, puzzle):
-        """
-        This function finds the next space that is not empty
-        """
-        for row in range(9):
-            for column in range(9):
-                if puzzle[row][column] != -1:
-                    return row, column
-        return None, None
-
-    def is_valid(self, puzzle, guess, row, col):
-        """
-        This function checks if a guess can go in the specified place
-        """
-        row_vals = puzzle[row]
-        if guess in row_vals:
-            return False
-        col_vals = [puzzle[i][col] for i in range(9)]
-        if guess in col_vals:
-            return False
-        row_start = (row // 3) * 3
-        col_start = (col // 3) * 3
-        for r in range(row_start, row_start + 3):
-            for c in range(col_start, col_start + 3):
-                if puzzle[r][c] == guess:
-                    return False
-        return True
-        
-    def solve(self, puzzle):
-        """
-        This function solves the sudoku
-        """
-        row, col = self.find_next_empty(puzzle)
-        if row is None and col is None:
-            return True
-        for guess in range(1,10):
-            self.count += 1
-            if self.is_valid(puzzle, guess, row, col):
-                puzzle[row][col] = guess
-                
-                if self.solve(puzzle):
-                    return (True, puzzle, self.count)
-            puzzle[row][col] = -1
-        return False
-
-class GUI():
-    """
-    The GUI class represents a GUI which solves sudokus
-    """
-    def __init__(self):
-        """
-        Build the window
-        """
-        self.solver = Solver()
-        self.window = tk.Tk()
-        self.title = tk.Label(text="WELCOME TO THE SUDOKU SOLVER")
-        self.title.grid(row=1, column=1)
-        self.board = [[],[],[],[],[],[],[],[],[]]
-        for row in range(9):
-            for item in range(9):
-                myentry = tk.Entry(width=1)
-                myentry.grid(row=row+3, column=item+3)
-                self.board[row].append(myentry)
-        self.pb = ttk.Progressbar(
-            self.window,
-            orient='horizontal',
-            mode='determinate',
-            length=280
-        )
-        self.pb.grid(row=5, column=1)
-        self.progress = tk.Label(text="0.0%")
-        self.progress.grid(row=6, column=1)
-        self.solve_btn = tk.Button(text="Solve!")
-        self.solve_btn.bind("<Button-1>", self.handle_solve_click)
-        self.solve_btn.grid(row=13,column=2)
-        self.clear_btn = tk.Button(text="Clear")
-        self.clear_btn.bind("<Button-1>", self.handle_clear_click)
-        self.clear_btn.grid(row=13, column=1)
-    
-    def handle_solve_click(self, event):
-        """
-        This function handles the press of the solve button
-        """
-        entryboard = [[],[],[],[],[],[],[],[],[]]
-        for row in range(9):
-            for item in range(9):
-                if self.board[row][item].get() != "":
-                    entryboard[row].append(int(self.board[row][item].get()))
-                else:
-                    entryboard[row].append(-1)
-        
-        row, col = self.solver.find_next_empty(entryboard)
-        if row == None:
-            showinfo(message="This sudoku is already solved.")
-            return False
-        row, col = self.solver.find_next_full(entryboard)
-        print(type(row))
-        while row != None:
-            now = entryboard[row][col]
-            entryboard[row][col] = -1
-            if self.solver.is_valid(entryboard, now, row, col):
-                pass
-            else:
-                showinfo(message="This is an impossible sudoku.")
-                # row = None
-                return False
-            #window.after(100, lambda:entryboard[row][col] = now)
-            previousrow, previouscol = row,col
-            row, col = self.solver.find_next_full(entryboard)
-            entryboard[previousrow][previouscol] = now
-        solved, self.solution, count = self.solver.solve(entryboard)
-        print(round(count/150))
-        self.pb.start(round(count/150))
-        print(self.solution)
-        print(count/1.5)
-        self.window.after(round(count/1.5), self.show_solution, entryboard)
-        self.window.after(10, self.update_progress_bar)
-    def show_solution(self, entryboard):
-        """
-        This function shows the solution
-        """
-        self.pb.stop()
-        self.pb['value'] = 100
-        count = 0
-        for row in range(9):
-            for item in range(9):
-                self.board[row][item].delete(0, tk.END)
-                self.board[row][item].insert(0, self.solution[row][item])
-    def handle_clear_click(self, event):
-        """
-        This function handles when the clear button is pressed
-        """
-        for row in range(9):
-            for item in range(9):
-                self.board[row][item].delete(0, tk.END)
-        self.pb['value'] = 0
-        self.progress['text'] = "0.0%"
-    def update_progress_bar(self):
-        """
-        This function updates the progress bar
-        """
-        if self.pb['value'] < 100:
-            self.progress['text'] =  f"{self.pb['value']}%"
-            self.window.after(10, self.update_progress_bar)
-        else:
-            self.pb['value'] = 100
-            self.progress['text'] = "Complete"
-    def start(self):
-        self.window.mainloop()
-
-if __name__ == "__main__":
-    solver = Solver()
-    print(solver.solve([[-1,7,2,-1,3,6,4,-1,-1],
-              [-1,9,-1,7,-1,-1,-1,3,5],
-              [-1,-1,-1,1,8,-1,-1,-1,2],
-              [2,-1,6,-1,-1,-1,-1,9,-1],
-              [3,-1,5,-1,9,-1,6,-1,8],
-              [-1,4,-1,-1,-1,-1,5,-1,1],
-              [7,-1,-1,-1,2,3,-1,-1,-1],
-              [1,5,-1,-1,-1,4,-1,8,-1],
-              [-1,-1,8,6,1,-1,9,7,-1]]))
-    interface = GUI()
-    interface.start()
-    
+    window = tk.Tk()
+    title = tk.Label(text="WELCOME TO THE SUDOKU SOLVER", font=("Arial"))
+    title.grid(row=1, column=1)
+    board = [[],[],[],[],[],[],[],[],[]]
+    entryboard = [[-1,-1,-1,-1,-1,-1,-1,-1,-1,],[-1,-1,-1,-1,-1,-1,-1,-1,-1,],[-1,-1,-1,-1,-1,-1,-1,-1,-1,],[-1,-1,-1,-1,-1,-1,-1,-1,-1,],[-1,-1,-1,-1,-1,-1,-1,-1,-1,],[-1,-1,-1,-1,-1,-1,-1,-1,-1,],[-1,-1,-1,-1,-1,-1,-1,-1,-1,],[-1,-1,-1,-1,-1,-1,-1,-1,-1,],[-1,-1,-1,-1,-1,-1,-1,-1,-1,]]
+    for row in range(9):
+        for item in range(9):
+            myentry = tk.Entry(width=1)
+            row_start = (row // 3)
+            col_start = (item // 3)
+            rowpos = row_start + row
+            print(rowpos)
+            colpos = col_start + item + 3
+            #print(col_start)
+            myentry.grid(row=rowpos, column=colpos)
+            board[row].append(myentry)
+    pb = ttk.Progressbar(
+        window,
+        orient='horizontal',
+        mode='determinate',
+        length=280
+    )
+    pb.grid(row=5, column=1)
+    progress = tk.Label(text="0.0%")
+    progress.grid(row=6, column=1)
+    solve_btn = tk.Button(text="Solve!")
+    solve_btn.bind("<Button-1>", handle_solve_click)
+    solve_btn.grid(row=13,column=2)
+    clear_btn = tk.Button(text="Clear")
+    clear_btn.bind("<Button-1>", handle_clear_click)
+    clear_btn.grid(row=13, column=1)
+    #save_btn = tk.Button(text="Save to file")
+    #save_btn.bind("<Button-1>", handle_save_click)
+    #save_btn.grid(row=13, column=0)
+    window.mainloop()
