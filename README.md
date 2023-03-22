@@ -1,4 +1,4 @@
-# Sudoclue
+# Sudoklu
 A sudoku solver that can also give hints about one of the squares.
 # How To Install
 Run the Linux command ```curl https://raw.githubusercontent.com/Mr-Piggy/Sudoku_Solver/main/install | bash```
