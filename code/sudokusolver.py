@@ -37,7 +37,7 @@ def solve_sudoku(puzzle):
     global count
     row, col = find_next_empty(puzzle)
     if row is None and col is None:
-        print("Solved")
+        #print("Solved")
         return True
     for guess in range(1,10):
         count += 1
@@ -71,6 +71,7 @@ def is_impossible(puzzle):
 def handle_solve_click(event):
     #pylint: disable=unused-argument
     global count
+    count = 0
     entryboard = [[],[],[],[],[],[],[],[],[]]
     for row in range(9):
         for item in range(9):
@@ -84,14 +85,14 @@ def handle_solve_click(event):
         showinfo(message="Impossible")
         return False
     solve_sudoku(entryboard)
-    print(count)
+    #print(count)
     time = count/2
     while time > 10000:
         time -= 1000
         print(time)
-    print(time)
+    #print(time)
     pb.start(round(time/100))
-    print(entryboard)
+    #print(entryboard)
     window.after(round(time), show_solution, entryboard)
     window.after(10, update_progress_bar)
 def show_solution(entryboard):
@@ -115,25 +116,53 @@ def handle_clear_click(event):
             board[row][item].delete(0, tk.END)
     pb['value'] = 0
     progress['text'] = "0.0%"
-#def handle_save_click(event):
-#    entryboard = [[],[],[],[],[],[],[],[],[]]
-#    stringtowrite = ""
-#    for row in range(9):
-#        for item in range(9):
-#            if board[row][item].get() != "":
-#                entryboard[row].append(int(board[row][item].get())) 
-#            else:
-#                entryboard[row].append(-1)
-#    stringtowrite += ("+" + "---+"*9)+"\n"
-#    for i, row in enumerate(entryboard):
-#        stringtowrite += ("|" + " {}   {}   {} |"*3).format(*[x if x != -1 else " " for x in row]) + "\n"
-#        if i % 3 == 2:
-#            stringtowrite += ("+" + "---+"*9) + "\n"
-#        else:
-#            stringtowrite += ("+" + "   +"*9) + "\n"
-#    with open("file.txt", "a") as file:
-#        file.write(stringtowrite)
-#        file.write("\n\n")
+# def handle_save_click(event):
+#     entryboard = [[],[],[],[],[],[],[],[],[]]
+#     stringtowrite = ""
+#     for row in range(9):
+#         for item in range(9):
+#             if board[row][item].get() != "":
+#                 entryboard[row].append(int(board[row][item].get())) 
+#             else:
+#                 entryboard[row].append(-1)
+#     stringtowrite += ("+" + "---+"*9)+"\n"
+#     for i, row in enumerate(entryboard):
+#         stringtowrite += ("|" + " {}   {}   {} |"*3).format(*[x if x != -1 else " " for x in row]) + "\n"
+#         if i % 3 == 2:
+#             stringtowrite += ("+" + "---+"*9) + "\n"
+#         else:
+#             stringtowrite += ("+" + "   +"*9) + "\n"
+#     with open("file.txt", "a") as file:
+#         file.write(stringtowrite)
+#         file.write("\n\n")
+def handle_hint_click(event):
+    #pylint: disable=unused-argument
+    entryboard = [[],[],[],[],[],[],[],[],[]]
+    otherboard = [[],[],[],[],[],[],[],[],[]]
+    for row in range(9):
+        for item in range(9):
+            if board[row][item].get() != "":
+                entryboard[row].append(int(board[row][item].get()))
+                otherboard[row].append(int(board[row][item].get()))
+            else:
+                entryboard[row].append(-1)
+                otherboard[row].append(-1)
+    #print(entryboard)
+    #extraboard = entryboard
+    if not(is_impossible(entryboard)):
+        showinfo(message="Impossible")
+        return False
+    solve_sudoku(entryboard)
+    #print(entryboard)
+    #print(otherboard)
+    for row in range(9):
+        for item in range(9):
+            if otherboard[row][item] != entryboard[row][item]:
+                board[row][item].delete(0, tk.END)
+                board[row][item].insert(0, entryboard[row][item])
+                return True
+    showinfo(message="Already solved")
+    
 def update_progress_bar():
     if pb['value'] < 100:
         progress['text'] =  f"{pb['value']}%"
@@ -144,37 +173,41 @@ def update_progress_bar():
 
 if __name__ == "__main__":
     window = tk.Tk()
-    title = tk.Label(text="WELCOME TO THE SUDOKU SOLVER", font=("Arial"))
-    title.grid(row=1, column=1)
+    #title = tk.Label(text="WELCOME TO THE SUDOKU SOLVER", font=("Arial"))
+    #title.grid(row=1, column=1)
     board = [[],[],[],[],[],[],[],[],[]]
     entryboard = [[-1,-1,-1,-1,-1,-1,-1,-1,-1,],[-1,-1,-1,-1,-1,-1,-1,-1,-1,],[-1,-1,-1,-1,-1,-1,-1,-1,-1,],[-1,-1,-1,-1,-1,-1,-1,-1,-1,],[-1,-1,-1,-1,-1,-1,-1,-1,-1,],[-1,-1,-1,-1,-1,-1,-1,-1,-1,],[-1,-1,-1,-1,-1,-1,-1,-1,-1,],[-1,-1,-1,-1,-1,-1,-1,-1,-1,],[-1,-1,-1,-1,-1,-1,-1,-1,-1,]]
+    sudoku_frame = tk.Frame(relief=tk.SUNKEN, borderwidth=5)
     for row in range(9):
         for item in range(9):
-            myentry = tk.Entry(width=1)
+            myentry = tk.Entry(master=sudoku_frame, width=1)
             row_start = (row // 3)
             col_start = (item // 3)
             rowpos = row_start + row
-            print(rowpos)
-            colpos = col_start + item + 3
+            #print(rowpos)
+            colpos = col_start + item + 1
             #print(col_start)
             myentry.grid(row=rowpos, column=colpos)
             board[row].append(myentry)
-    pb = ttk.Progressbar(
-        window,
-        orient='horizontal',
-        mode='determinate',
-        length=280
-    )
-    pb.grid(row=5, column=1)
-    progress = tk.Label(text="0.0%")
-    progress.grid(row=6, column=1)
-    solve_btn = tk.Button(text="Solve!")
+    sudoku_frame.pack()
+    progress_frame = tk.Frame()
+    pb = ttk.Progressbar(master=progress_frame, orient='horizontal', mode='determinate', length=280)
+    pb.grid(row=0, column=0)
+    progress = tk.Label(master=progress_frame, text="0.0%")
+    progress.grid(row=1, column=0)
+    progress_frame.pack(pady=15)
+    button_frame = tk.Frame(relief=tk.RIDGE, borderwidth=5)
+    solve_btn = tk.Button(master=button_frame, text="Solve", relief=tk.FLAT, borderwidth=2)
     solve_btn.bind("<Button-1>", handle_solve_click)
-    solve_btn.grid(row=13,column=2)
-    clear_btn = tk.Button(text="Clear")
+    solve_btn.grid(row=0,column=0)
+    clear_btn = tk.Button(master=button_frame, text="Clear", relief=tk.FLAT, borderwidth=2)
     clear_btn.bind("<Button-1>", handle_clear_click)
-    clear_btn.grid(row=13, column=1)
-    #save_btn = tk.Button(text="Save to file")
+    clear_btn.grid(row=0, column=1)
+    #save_btn = tk.Button(master=button_frame, text="Save to file")
     #save_btn.bind("<Button-1>", handle_save_click)
-    #save_btn.grid(row=13, column=0)
+    #save_btn.grid(row=0, column=0)
+    hint_btn = tk.Button(master=button_frame, text="Hint", relief=tk.FLAT, borderwidth=2)
+    hint_btn.bind("<Button-1>", handle_hint_click)
+    hint_btn.grid(row=0, column=3)
+    button_frame.pack()
     window.mainloop()
