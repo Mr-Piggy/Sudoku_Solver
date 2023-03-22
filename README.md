@@ -1,5 +1,5 @@
-# Sudoku_Solver
-A sudoku solver
+# Sudoclue
+A sudoku solver that can also give hints about one of the squares.
 # How To Install
 Run the Linux command ```curl https://raw.githubusercontent.com/Mr-Piggy/Sudoku_Solver/main/install | bash```
 # Manual Installation
@@ -20,3 +20,5 @@ cp SudokuSolver.desktop ~/Desktop/
 sudo cp SudokuSolver.desktop /usr/share/applications/
 sudo cp sudokusolver /usr/bin/
 ```
+# Source code
+The source code for this is in the ```code``` directory. It is one python file that relies on Tkinter.
