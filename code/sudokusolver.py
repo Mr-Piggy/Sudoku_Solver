@@ -6,6 +6,21 @@ from tkinter.messagebox import showinfo
 
 count = 0
 
+def board_to_list(board):
+    entryboard = [[],[],[],[],[],[],[],[],[]]
+    for row in range(9):
+        for item in range(9):
+            try:
+                if (board[row][item].get() == ""):
+                    entryboard[row].append(-1)
+                elif not(int(board[row][item].get()) in [1,2,3,4,5,6,7,8,9]):
+                    raise ValueError
+                else:
+                    entryboard[row].append(int(board[row][item].get()))
+            except:
+                showinfo(message="Invalid sudoku")
+                return False
+    return entryboard
 def find_next_empty(puzzle):
     for row in range(9):
         for column in range(9):
@@ -72,17 +87,13 @@ def handle_solve_click(event):
     #pylint: disable=unused-argument
     global count
     count = 0
-    entryboard = [[],[],[],[],[],[],[],[],[]]
-    for row in range(9):
-        for item in range(9):
-            if board[row][item].get() != "":
-                entryboard[row].append(int(board[row][item].get())) 
-            else:
-                entryboard[row].append(-1)
+    entryboard = board_to_list(board)
+    if not entryboard:
+        return False
     #print(entryboard)
     #extraboard = entryboard
     if not(is_impossible(entryboard)):
-        showinfo(message="Impossible")
+        showinfo(message="Invalid sudoku")
         return False
     solve_sudoku(entryboard)
     #print(count)
@@ -137,16 +148,10 @@ def handle_clear_click(event):
 #         file.write("\n\n")
 def handle_hint_click(event):
     #pylint: disable=unused-argument
-    entryboard = [[],[],[],[],[],[],[],[],[]]
-    otherboard = [[],[],[],[],[],[],[],[],[]]
-    for row in range(9):
-        for item in range(9):
-            if board[row][item].get() != "":
-                entryboard[row].append(int(board[row][item].get()))
-                otherboard[row].append(int(board[row][item].get()))
-            else:
-                entryboard[row].append(-1)
-                otherboard[row].append(-1)
+    entryboard = board_to_list(board)
+    otherboard = board_to_list(board)
+    if not(entryboard):
+        return False
     #print(entryboard)
     #extraboard = entryboard
     if not(is_impossible(entryboard)):
