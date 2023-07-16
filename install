@@ -1,14 +1,5 @@
 if [ "$(id -u)" -eq 0 ]; then echo "Please run as ordinary user." >&2; exit 1; fi
-sudo apt update
-sudo apt install git
-mkdir ~/.sudokusolver
-cd ~/.sudokusolver
-git clone https://github.com/Mr-Piggy/Sudoku_Solver
-cd Sudoku_Solver/binary
-chmod +x sudokusolver
-cp -r * ..
-cd ..
-sudo rm -r binary code .git install
-cp SudokuSolver.desktop ~/Desktop/
-sudo cp SudokuSolver.desktop /usr/share/applications/
-sudo cp sudokusolver /usr/bin/
+sudo curl https://github.com/Mr-Piggy/Sudoku_Solver/raw/main/binary/sudokusolver > /usr/bin/sudokusolver
+sudo curl https://raw.githubusercontent.com/Mr-Piggy/Sudoku_Solver/main/binary/sudoku.jpg > /usr/share/icons/sudoku.jpg
+sudo curl https://raw.githubusercontent.com/Mr-Piggy/Sudoku_Solver/main/binary/SudokuSolver.desktop > /usr/share/applications/sudokusolver.desktop
+sudo ln -s /usr/share/applications/sudokusolver.dekstop $HOME/Desktop

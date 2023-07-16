@@ -2,7 +2,7 @@
 Name=Sudoku Solver
 Comment=Simple sudoku solver
 Exec=sudokusolver
-Icon=~/.sudokusolver/Sudoku_Solver/sudoku.jpg
+Icon=/usr/share/icons/sudoku.jpg
 Terminal=false
 Type=Application
 Categories=Utility;
